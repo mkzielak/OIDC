@@ -141,17 +141,16 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      # - run:
-      #     name: Import environment variables
-      #     command: |
-      #       cat env_var.env >>  $BASH_ENV
+      - run:
+          name: Import environment variables
+          command: |
+            cd ./layers/<< pipeline.parameters.workingdir >>
+            source ./env_var.env
       - run:
           name: terraform apply
           command: |
             cd ./layers/<< pipeline.parameters.workingdir >>
             terraform apply ./tfplan 
-            python3 /root/project/scripts/ConvertVariable.py $CIRCLE_PROJECT_REPONAME $CIRCLE_JOB $CIRCLE_OIDC_TOKEN
-           
       - persist_to_workspace:
           root: .
           paths:
