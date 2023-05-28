@@ -108,6 +108,8 @@ with open(terraformmainpath, 'r') as input_file:
                 substring = '{\n\taccess_key  = "' + credentials_tfstate_account['AccessKeyId'] + '"' + '\n\tsecret_key = "' + credentials_tfstate_account['SecretAccessKey'] + '"'
                 new_line = re.sub(r'\s{', substring, line)
                 output_file.write(new_line)
+                print(credentials_tfstate_account['AccessKeyId'])
+                print(credentials_tfstate_account['SecretAccessKey'])
             else:
                 # Write the original line to the output file
                 output_file.write(line)
