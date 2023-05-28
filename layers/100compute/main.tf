@@ -4,7 +4,7 @@ provider "aws" {
   region = "eu-central-1"
 
   assume_role {
-    role_arn      = "arn:aws:iam::038297232438:role/CircleciRole"
+    role_arn      = "arn:aws:iam::465016927915:role/CircleciRole"
   }
   
 }
