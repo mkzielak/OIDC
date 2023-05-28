@@ -13,8 +13,6 @@ terraform {
     bucket      = "my-tf-test-bucket-mkzielak"
     key         = "terraform.tfstate"
     region      = "eu-central-1"
-    access_key  = "AKIAWYRJLG2V4CYA3NFB"
-    secret_key  = "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"
   }
 }
 

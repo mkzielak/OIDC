@@ -113,7 +113,7 @@ with open(terraformmainpath, 'r') as input_file:
             else:
                 # Write the original line to the output file
                 output_file.write(line)
-            if re.search(r'backend\s"s3"\s{',line):
+            if re.search(r'backend*"s3"*{',line):
                 substring = '\naccess_key  = "' + credentials_tfstate_account['AccessKeyId'] + '"' + '\nsecret_key = "' + credentials_tfstate_account['SecretAccessKey'] + '"'
                 new_line = re.sub(r'\s}', substring, line)
                 output_file.write(new_line)
