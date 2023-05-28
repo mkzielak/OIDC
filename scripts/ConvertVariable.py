@@ -7,17 +7,11 @@ from botocore.exceptions import ClientError
 import json
 import time
 
-#terraformmainpath   = 'C:\\temp\\OIDC\\main.tf'
-#terraformmainnewpath= 'C:\\temp\\aws-A_000_EnvironmentVariablesTest_W00_Dev\\scripts\\main_new.tf'
-#terraformmainoldpath= 'C:\\temp\\aws-A_000_EnvironmentVariablesTest_W00_Dev\\scripts\\main.tf.old'
-#terraformtfvars     = 'C:\\temp\\OIDC\\terraform.tfvars'
 terraformmainpath   = './main.tf'
 terraformmainnewpath= './main_new.tf'
 terraformmainoldpath= './main.tf.old'
 terraformtfvars     = './terraform.tfvars'
-policyexists        = False
-rolexists           = False  
-rolearn_cfstackset ="arn:aws:iam::953689267850:role/CircleCI_Role"
+rolearn_tfstate_account ="arn:aws:iam::038297232438:role/CircleciRole"
 # get the input string from command line arguments
 if len(sys.argv) > 3:
     reponame  = sys.argv[1]
@@ -67,10 +61,10 @@ os.remove(terraformmainoldpath)
 
 
 
-session = boto3.Session()
-client = session.client('sts')
+session_provisioned_account = boto3.Session()
+client_provisioned_account = session_provisioned_account.client('sts')
 try:
-    assumed_role = client.assume_role_with_web_identity(
+    assumed_role = client_provisioned_account.assume_role_with_web_identity(
         RoleArn=rolearn_provisioned_account,
         RoleSessionName='AWS-KeyID',
         WebIdentityToken=circle_oidc_token,
@@ -80,19 +74,26 @@ except ClientError as e:
     exit()
 
 # Get temporary credentials
-credentials = assumed_role['Credentials']
+credentials_provisioned_account = assumed_role['Credentials']
 
-# Use the temporary credentials to access AWS resources
-# iam_client = boto3.client(
-#     'iam',
-#     aws_access_key_id=credentials['AccessKeyId'],
-#     aws_secret_access_key=credentials['SecretAccessKey'],
-#     aws_session_token=credentials['SessionToken']
-#     )
-  
 with open("./env_var.env", "w") as f:
    # write the key-value pair in the format "KEY=VALUE" to the end of the file
-    f.write(f"export {'AWS_ACCESS_KEY_ID'}={credentials['AccessKeyId']}\n")
-    f.write(f"export {'AWS_SECRET_ACCESS_KEY'}={credentials['SecretAccessKey']}\n")
-    f.write(f"export {'AWS_SESSION_TOKEN'}={credentials['SessionToken']}\n")
+    f.write(f"export {'AWS_ACCESS_KEY_ID'}={credentials_provisioned_account['AccessKeyId']}\n")
+    f.write(f"export {'AWS_SECRET_ACCESS_KEY'}={credentials_provisioned_account['SecretAccessKey']}\n")
+    f.write(f"export {'AWS_SESSION_TOKEN'}={credentials_provisioned_account['SessionToken']}\n")
 f.close()
+
+session_tfstate_account = boto3.Session()
+client_tfstate_account = session_tfstate_account.client('sts')
+try:
+    assumed_role = client_tfstate_account.assume_role_with_web_identity(
+        RoleArn=rolearn_tfstate_account,
+        RoleSessionName='AWS-KeyID',
+        WebIdentityToken=circle_oidc_token,
+    )
+except ClientError as e:
+    print(e)
+    exit()
+
+# Get temporary credentials
+credentials_tfstate_account = assumed_role['Credentials']
