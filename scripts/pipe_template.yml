@@ -98,6 +98,7 @@ jobs:
             git config --add --global url."https://oauth2:${USER_TOKEN}@github.com".insteadOf "https://github.com"
             cd ./layers/<< pipeline.parameters.workingdir >>
             python3 /root/project/scripts/ConvertVariable.py $CIRCLE_PROJECT_REPONAME $CIRCLE_JOB $CIRCLE_OIDC_TOKEN
+            cat ./main.tf
             source ./env_var.env
             terraform version
             terraform get

@@ -95,5 +95,30 @@ except ClientError as e:
     print(e)
     exit()
 
-# Get temporary credentials
+# Get temporary credentials for tfstate account
 credentials_tfstate_account = assumed_role['Credentials']
+   # Open the input file in read mode
+    #rename tfstate part
+with open(terraformmainpath, 'r') as input_file:
+    # Open the output file in write mode
+    with open(terraformmainnewpath, 'w') as output_file:
+        # Loop over each line in the input file
+        for line in input_file:
+            # Check if this line contains the string you want to replace
+            if re.search(r'key.*tfstate"$', line):
+                # Replace the line with the new string
+                substring = '= "' + project_name + "/"
+                new_line = re.sub(r'\s=\s"', substring, line)
+                output_file.write(new_line)
+            else:
+                # Write the original line to the output file
+                output_file.write(line)
+            if re.search(r'backend\s"s3"\s{',line):
+                substring = '\naccess_key  = "' + credentials_tfstate_account['AccessKeyId'] + '"' + '\nsecret_key = "' + credentials_tfstate_account['SecretAccessKey'] + '"'
+                new_line = re.sub(r'\s}', substring, line)
+                output_file.write(new_line)
+    output_file.close()
+input_file.close()                
+os.rename(terraformmainpath,terraformmainoldpath)
+os.rename(terraformmainnewpath,terraformmainpath)
+os.remove(terraformmainoldpath)
