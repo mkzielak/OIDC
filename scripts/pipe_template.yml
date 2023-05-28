@@ -105,7 +105,7 @@ jobs:
             printenv
             source ./env_var.env
             printenv
-            cat env_var.env >>  $BASH_ENV
+            #cat env_var.env >>  $BASH_ENV
             cat ./main.tf
             terraform version
             terraform get
