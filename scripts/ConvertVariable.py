@@ -45,7 +45,7 @@ with open(terraformmainpath, 'r') as input_file:
         # Loop over each line in the input file
         for line in input_file:
             # Check if this line contains the string you want to replace
-            if re.search(r'key.*tfstate"$', line):
+            if re.search(r'key.*tfstate\"$', line):
                 # Replace the line with the new string
                 substring = '= "' + project_name + "/"
                 new_line = re.sub(r'\s=\s"', substring, line)
@@ -104,7 +104,7 @@ with open(terraformmainpath, 'r') as input_file:
     with open(terraformmainnewpath, 'w') as output_file:
         # Loop over each line in the input file
         for line in input_file:
-            if re.search(r'\s+backend*{$',line):
+            if re.search(r'\s+backend\s\"s3\"\s+{$',line):
                 print(line)
                 substring = '\naccess_key  = "' + credentials_tfstate_account['AccessKeyId'] + '"' + '\nsecret_key = "' + credentials_tfstate_account['SecretAccessKey'] + '"'
                 new_line = re.sub(r'\s{', substring, line)
