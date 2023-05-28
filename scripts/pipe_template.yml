@@ -141,10 +141,10 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      - run:
-          name: Import environment variables
-          command: |
-            cat env_var.env >>  $BASH_ENV
+      # - run:
+      #     name: Import environment variables
+      #     command: |
+      #       cat env_var.env >>  $BASH_ENV
       - run:
           name: terraform apply
           command: |
