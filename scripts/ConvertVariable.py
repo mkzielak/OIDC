@@ -90,7 +90,7 @@ credentials = assumed_role['Credentials']
 #     aws_session_token=credentials['SessionToken']
 #     )
   
-with open("/root/project/env_var.env", "w") as f:
+with open("./env_var.env", "w") as f:
    # write the key-value pair in the format "KEY=VALUE" to the end of the file
     f.write(f"export {'AWS_ACCESS_KEY_ID'}={credentials['AccessKeyId']}\n")
     f.write(f"export {'AWS_SECRET_ACCESS_KEY'}={credentials['SecretAccessKey']}\n")
