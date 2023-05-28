@@ -105,9 +105,11 @@ with open(terraformmainpath, 'r') as input_file:
         # Loop over each line in the input file
         for line in input_file:
             if re.search(r'*s3*',line):
+                print(line)
                 substring = '\naccess_key  = "' + credentials_tfstate_account['AccessKeyId'] + '"' + '\nsecret_key = "' + credentials_tfstate_account['SecretAccessKey'] + '"'
                 new_line = re.sub(r'\s{', substring, line)
                 output_file.write(new_line)
+  
     output_file.close()
 input_file.close()                
 os.rename(terraformmainpath,terraformmainoldpath)
