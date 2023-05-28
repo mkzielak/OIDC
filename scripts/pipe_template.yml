@@ -91,10 +91,6 @@ jobs:
     - checkout
     - attach_workspace:
           at: .
-    # - run:
-    #       name: Import environment variables
-    #       command: |
-    #         cat env_var.env >>  $BASH_ENV
     - run:
           name: terraform init & validate
           command: |
@@ -124,7 +120,9 @@ jobs:
           name: Import environment variables
           command: |
             cd ./layers/<< pipeline.parameters.workingdir >>
+            ls -ls
             source ./env_var.env
+            printenv
     - run:
           name: terraform plan
           command: |
