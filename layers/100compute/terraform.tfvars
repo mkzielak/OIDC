@@ -2,7 +2,7 @@ application = "ApplicationMonitoring"
 
 appOwner = "Michele Madaus"
 
-aws_account_id = "513657435385"
+aws_account_id = "465016927915"
 
 cidr_range = "10.97.189.128/26"
 
