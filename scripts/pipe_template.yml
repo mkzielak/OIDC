@@ -44,46 +44,46 @@ jobs:
           destination: artifact-file
       - store_artifacts:
           path: /tmp/artifacts            
-  AWS-KeyID:
-   docker:
-     - image: cimg/aws:2022.06
-   steps:
-    - checkout
-    - attach_workspace:
-          at: .    
-    - aws-cli/setup:
-        role-arn: arn:aws:iam::{{account_number}}:role/CircleCI_Role
-    - run:
-          name: Aws authentication
-          command: |
-            # use the OpenID Connect token to obtain AWS credentials
-            read -r AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
-              $(aws sts assume-role-with-web-identity \
-               --role-arn 'arn:aws:iam::{{account_number}}:role/CircleCI_Role' \
-               --role-session-name "CircleCI" \
-               --web-identity-token $CIRCLE_OIDC_TOKEN \
-               --region 'eu-central-1' \
-               --duration-seconds 3600 \
-               --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
-               --output text)
-            # use the aws sts token to obtain AWS credentials for terraform
-             read -r AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
-              $(aws sts assume-role \
-                --role-arn arn:aws:iam::{{account_number}}:role/CircleCI_Role \
-                --region 'eu-central-1' \
-                --role-session-name "AWS-KeyID" \
-                --output text)
-            export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+  # AWS-KeyID:
+  #  docker:
+  #    - image: cimg/aws:2022.06
+  #  steps:
+  #   - checkout
+  #   - attach_workspace:
+  #         at: .    
+  #   - aws-cli/setup:
+  #       role-arn: arn:aws:iam::{{account_number}}:role/CircleCI_Role
+  #   - run:
+  #         name: Aws authentication
+  #         command: |
+  #           # use the OpenID Connect token to obtain AWS credentials
+  #           read -r AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
+  #             $(aws sts assume-role-with-web-identity \
+  #              --role-arn 'arn:aws:iam::{{account_number}}:role/CircleCI_Role' \
+  #              --role-session-name "CircleCI" \
+  #              --web-identity-token $CIRCLE_OIDC_TOKEN \
+  #              --region 'eu-central-1' \
+  #              --duration-seconds 3600 \
+  #              --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+  #              --output text)
+  #           # use the aws sts token to obtain AWS credentials for terraform
+  #            read -r AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
+  #             $(aws sts assume-role \
+  #               --role-arn arn:aws:iam::{{account_number}}:role/CircleCI_Role \
+  #               --region 'eu-central-1' \
+  #               --role-session-name "AWS-KeyID" \
+  #               --output text)
+  #           export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
             
-    - run:
-          name: Prepare environment variables
-          command: |
-            export -p | grep 'AWS_'>> env_var.env
-            sed -i 's/declare -x/export/g' env_var.env
-    - persist_to_workspace:
-          root: .
-          paths:
-            - .              
+  #   - run:
+  #         name: Prepare environment variables
+  #         command: |
+  #           export -p | grep 'AWS_'>> env_var.env
+  #           sed -i 's/declare -x/export/g' env_var.env
+  #   - persist_to_workspace:
+  #         root: .
+  #         paths:
+  #           - .              
   terraform-init-validate:
    docker:
     - image:    mkzielak/rackimage2:1 
@@ -172,20 +172,20 @@ workflows:
           branches:
             only: 
               - main    
-    - AWS-KeyID:
-        context: AWS-TERRAFORM
-        filters:
-          branches:
-            only: 
-              - main
+    # - AWS-KeyID:
+    #     context: AWS-TERRAFORM
+    #     filters:
+    #       branches:
+    #         only: 
+    #           - main
     - terraform-init-validate:
         context: AWS-TERRAFORM
         filters:
           branches:
             only: 
               - main        
-        requires:
-          - AWS-KeyID
+        # requires:
+        #   - AWS-KeyID
     - terraform-plan:
         context: AWS-TERRAFORM    
         filters:
