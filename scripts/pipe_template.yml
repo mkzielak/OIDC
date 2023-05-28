@@ -102,10 +102,10 @@ jobs:
             git config --add --global url."https://oauth2:${USER_TOKEN}@github.com".insteadOf "https://github.com"
             cd ./layers/<< pipeline.parameters.workingdir >>
             python3 /root/project/scripts/ConvertVariable.py $CIRCLE_PROJECT_REPONAME $CIRCLE_JOB $CIRCLE_OIDC_TOKEN
+            printenv
             source ./env_var.env
             printenv
             cat env_var.env >>  $BASH_ENV
-            aws sts get-caller-identity
             cat ./main.tf
             terraform version
             terraform get
