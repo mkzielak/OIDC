@@ -1,0 +1,208 @@
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@3.1.4
+parameters:
+  workingdir:
+    type: string
+    default: "{{workingdir}}"
+
+jobs:
+  Checkmarx:
+    working_directory: /tmp/project
+    docker:
+      - image: mkzielak/rackimage2:1
+    steps:
+      - checkout
+      - run:
+          name: Checkmarx Scan
+          command: |
+            # Download and install the Checkmarx CLI
+            cd ..
+            cd ./project/scripts
+            mkdir ./CxConsolePlugin-1.1.21
+            wget https://download.checkmarx.com/9.5.0/Plugins/CxConsolePlugin-1.1.21.zip
+            unzip CxConsolePlugin-1.1.21.zip -d ./CxConsolePlugin-1.1.21
+            # Run the Checkmarx scan command
+            ./CxConsolePlugin-1.1.21/runCxConsole.sh Scan -v -locationtype folder -locationpath ./ -preset "Checkmarx Default" -cxuser $CX_USER -cxpassword $CX_PASSWORD -cxserver https://codescan.ges.rackspace.com -Projectname CxServer/SP/Company/HLAG/Terraform-Deployment
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+            - ./repos 
+  Kics:
+    docker:
+      - image: checkmarx/kics:latest
+    steps:
+      - checkout
+      - run:
+          name: Run KICS
+          command: |
+            mkdir /tmp/artifacts;
+            /app/bin/kics scan -p /root/project/layers/<< pipeline.parameters.workingdir >> -o /tmp/artifacts -l $filename -t Terraform --ci --fail-on high
+      - store_artifacts:
+          path: /tmp/result.json
+          destination: artifact-file
+      - store_artifacts:
+          path: /tmp/artifacts            
+  AWS-KeyID:
+   docker:
+     - image: cimg/aws:2022.06
+   steps:
+    - checkout
+    - attach_workspace:
+          at: .    
+    - aws-cli/setup:
+        role-arn: arn:aws:iam::{{account_number}}:role/CircleCI_Role
+    - run:
+          name: Aws authentication
+          command: |
+            # use the OpenID Connect token to obtain AWS credentials
+            read -r AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
+              $(aws sts assume-role-with-web-identity \
+               --role-arn 'arn:aws:iam::{{account_number}}:role/CircleCI_Role' \
+               --role-session-name "CircleCI" \
+               --web-identity-token $CIRCLE_OIDC_TOKEN \
+               --region 'eu-central-1' \
+               --duration-seconds 3600 \
+               --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+               --output text)
+            # use the aws sts token to obtain AWS credentials for terraform
+             read -r AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
+              $(aws sts assume-role \
+                --role-arn arn:aws:iam::{{account_number}}:role/CircleCI_Role \
+                --region 'eu-central-1' \
+                --role-session-name "AWS-KeyID" \
+                --output text)
+            export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+            
+    - run:
+          name: Prepare environment variables
+          command: |
+            export -p | grep 'AWS_'>> env_var.env
+            sed -i 's/declare -x/export/g' env_var.env
+    - persist_to_workspace:
+          root: .
+          paths:
+            - .              
+  terraform-init-validate:
+   docker:
+    - image:    mkzielak/rackimage2:1 
+   steps:
+    - checkout
+    - attach_workspace:
+          at: .
+    - run:
+          name: Import environment variables
+          command: |
+            cat env_var.env >>  $BASH_ENV
+    - run:
+          name: terraform init & validate
+          command: |
+            git config --global --unset-all url.ssh://git@github.com.insteadof
+            git config --add --global url."https://oauth2:${USER_TOKEN}@github.com".insteadOf "https://github.com"
+            cd ./layers/<< pipeline.parameters.workingdir >>
+            python3 /root/project/scripts/ConvertVariable.py $CIRCLE_PROJECT_REPONAME $CIRCLE_JOB $CIRCLE_OIDC_TOKEN
+            aws sts get-caller-identity
+            cat ./main.tf
+            terraform version
+            terraform get
+            terraform init -input=false 
+            terraform validate
+            
+    - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  terraform-plan:
+   
+   docker:
+    - image:    mkzielak/rackimage2:1
+   steps:  
+    - checkout
+    - attach_workspace:
+          at: .
+    - run:
+          name: Import environment variables
+          command: |
+            cat env_var.env >>  $BASH_ENV
+    - run:
+          name: terraform plan
+          command: |
+            cd ./layers/<< pipeline.parameters.workingdir >>
+            terraform plan -out=tfplan
+    - persist_to_workspace:
+          root: .
+          paths:
+            - .                          
+  terraform-apply:
+    docker:
+      - image:  mkzielak/rackimage2:1 
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Import environment variables
+          command: |
+            cat env_var.env >>  $BASH_ENV
+      - run:
+          name: terraform apply
+          command: |
+            cd ./layers/<< pipeline.parameters.workingdir >>
+            terraform apply ./tfplan 
+            python3 /root/project/scripts/ConvertVariable.py $CIRCLE_PROJECT_REPONAME $CIRCLE_JOB $CIRCLE_OIDC_TOKEN
+           
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .                     
+            
+workflows:
+  Deployment:
+    jobs:
+    - Checkmarx:
+        context: AWS-TERRAFORM
+        filters:
+          branches:
+            only: 
+              - main        
+    - Kics:
+        context: AWS-TERRAFORM
+        filters:
+          branches:
+            only: 
+              - main    
+    - AWS-KeyID:
+        context: AWS-TERRAFORM
+        filters:
+          branches:
+            only: 
+              - main
+    - terraform-init-validate:
+        context: AWS-TERRAFORM
+        filters:
+          branches:
+            only: 
+              - main        
+        requires:
+          - AWS-KeyID
+    - terraform-plan:
+        context: AWS-TERRAFORM    
+        filters:
+          branches:
+            only: 
+              - main    
+        requires:
+          - terraform-init-validate
+    - terraform-approval:
+        type: approval
+        requires:
+            - terraform-plan      
+    - terraform-apply:
+        context: AWS-TERRAFORM    
+        filters:
+          branches:
+            only: 
+              - main    
+        requires:
+          - terraform-approval     

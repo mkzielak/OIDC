@@ -1,0 +1,53 @@
+Resources:
+  PatchOperation:
+    Type: AWS::SSM::PatchBaseline
+    Properties:
+      Name: !Sub HLAGLocalPatchPolicyNonProdApplicationMonitoringAmazonLinux20600
+      OperatingSystem: AMAZON_LINUX_2
+      Description: Patch policy for Non-Prod Application Monitoring AmazonLinux2 0600
+      ApprovalRules:
+        PatchRules:
+        - PatchFilterGroup:
+            PatchFilters:
+            - Key: CLASSIFICATION
+              Values:
+              - Security
+              - Critical
+              - Important
+              - Moderate
+            - Key: MSRC_SEVERITY
+              Values:
+              - Critical
+              - Important
+            - Key: PATCH_SET
+              Values:
+              - OS
+          ApproveAfterDays: 7
+      Sources:
+      - Name: AWS-AmazonLinux2
+        Products:
+        - AmazonEC2
+      Targets:
+      - Key: Tag:hlag:LocalPatchPolicy
+        Values:
+        - AmazonLinux2_NonProd_0600
+      RebootOptions:
+        RebootAfterInstall: true
+        REBOOT_IF_NEEDED: yes
+      Schedule:
+        Expression: cron(0 6 * * ? *)
+      GlobalFilters:
+        PatchFilters:
+        - Key: CLASSIFICATION
+          Values:
+          - Security
+          - Critical
+          - Important
+          - Moderate
+        - Key: MSRC_SEVERITY
+          Values:
+          - Critical
+          - Important
+        - Key: PATCH_SET
+          Values:
+          - OS
