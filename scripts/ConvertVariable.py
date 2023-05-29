@@ -35,7 +35,6 @@ with open(terraformtfvars, 'r') as f:
             value_temp = re.sub(' +"', '',value)
             account_number = re.sub('"', '',value_temp)
             rolearn_provisioned_account = "arn:aws:iam::"+ account_number + ":role/CircleciRole"
-            print(rolearn_provisioned_account)
             break
 f.close()
 
