@@ -105,7 +105,7 @@ with open(terraformmainpath, 'r') as input_file:
         for line in input_file:
             if re.search(r'"s3"',line):
                 substring = '{\n\taccess_key  = "' + credentials_tfstate_account['AccessKeyId'] + '"' + '\n\tsecret_key = "' + credentials_tfstate_account['SecretAccessKey'] + '"'
-                new_line = re.sub(r'\s{', substring, line)
+                new_line = re.sub(r'{', substring, line)
                 output_file.write(new_line)
                 print(credentials_tfstate_account['AccessKeyId'])
                 print(credentials_tfstate_account['SecretAccessKey'])
