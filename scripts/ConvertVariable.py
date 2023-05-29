@@ -99,22 +99,22 @@ except ClientError as e:
 credentials_tfstate_account = assumed_role['Credentials']
    # Open the input file in read mode
     #rename tfstate part
-with open(terraformmainpath, 'r') as input_file:
-    # Open the output file in write mode
-    with open(terraformmainnewpath, 'w') as output_file:
-        # Loop over each line in the input file
-        for line in input_file:
-            if re.search(r'\s+backend\s\"s3\"\s+{$',line):
-                substring = '{\n\taccess_key  = "' + credentials_tfstate_account['AccessKeyId'] + '"' + '\n\tsecret_key = "' + credentials_tfstate_account['SecretAccessKey'] + '"'
-                new_line = re.sub(r'\s{', substring, line)
-                output_file.write(new_line)
-                print(credentials_tfstate_account['AccessKeyId'])
-                print(credentials_tfstate_account['SecretAccessKey'])
-            else:
-                # Write the original line to the output file
-                output_file.write(line)
-    output_file.close()
-input_file.close()                
-os.rename(terraformmainpath,terraformmainoldpath)
-os.rename(terraformmainnewpath,terraformmainpath)
-os.remove(terraformmainoldpath)
+# with open(terraformmainpath, 'r') as input_file:
+#     # Open the output file in write mode
+#     with open(terraformmainnewpath, 'w') as output_file:
+#         # Loop over each line in the input file
+#         for line in input_file:
+#             if re.search(r'\s+backend\s\"s3\"\s+{$',line):
+#                 substring = '{\n\taccess_key  = "' + credentials_tfstate_account['AccessKeyId'] + '"' + '\n\tsecret_key = "' + credentials_tfstate_account['SecretAccessKey'] + '"'
+#                 new_line = re.sub(r'\s{', substring, line)
+#                 output_file.write(new_line)
+#                 print(credentials_tfstate_account['AccessKeyId'])
+#                 print(credentials_tfstate_account['SecretAccessKey'])
+#             else:
+#                 # Write the original line to the output file
+#                 output_file.write(line)
+#     output_file.close()
+# input_file.close()                
+# os.rename(terraformmainpath,terraformmainoldpath)
+# os.rename(terraformmainnewpath,terraformmainpath)
+# os.remove(terraformmainoldpath)
