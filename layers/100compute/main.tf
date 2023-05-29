@@ -1,5 +1,3 @@
-
-
 provider "aws" {
   region = "eu-central-1"
 
@@ -11,7 +9,7 @@ provider "aws" {
 terraform {
 backend "s3"{
     bucket      = "my-tf-test-bucket-mkzielak"
-    key        = "terraform.tfstate"
+    key         = "terraform.tfstate"
     region      = "eu-central-1"
   }
 
