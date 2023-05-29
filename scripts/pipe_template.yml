@@ -100,6 +100,7 @@ jobs:
             python3 /root/project/scripts/ConvertVariable.py $CIRCLE_PROJECT_REPONAME $CIRCLE_JOB $CIRCLE_OIDC_TOKEN
             cat ./main.tf
             source ./env_var.env
+            aws sts get-caller-identity
             terraform version
             terraform get
             terraform init -input=false 
