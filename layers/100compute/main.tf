@@ -11,7 +11,7 @@ provider "aws" {
 terraform {
 backend "s3"{
     bucket      = "my-tf-test-bucket-mkzielak"
-    key        = "oidc/terraform.tfstate"
+    key        = "terraform.tfstate"
     region      = "eu-central-1"
   }
 
