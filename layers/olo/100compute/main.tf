@@ -8,9 +8,9 @@ provider "aws" {
 }
 terraform {
 backend "s3"{
-	access_key  = "ASIAQR2VRMQ3LMXTDA5P"
-	secret_key = "oP9pQ/ioDXYtnpgZYpPndcoglDyVyKRva/YyNjNm"
-    bucket      = "my-tf-test-bucket-mkzielak1"
+	# access_key  = "ASIAQR2VRMQ3AWLHQYMK"
+	# secret_key =  "gxU8DL+0ZDnwBlxDtIc6Qa8gkMANT35VZ+xNSFCY"
+    bucket      = "my-tf-test-bucket-mkzielak"
     key        = "oidc/terraform.tfstate"
     region      = "eu-central-1"
   }
